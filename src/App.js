@@ -14,22 +14,24 @@ import './App.css';
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch('https://swapi.dev/api/films/');
+        const response = await fetch('https://react-http-ad27f-default-rtdb.firebaseio.com/movies.json');
         if (!response.ok) {
           throw new Error('Something went wrong!');
         }
   
         const data = await response.json();
+        const loadedMovies = [];
+        for(const key in data){
+          loadedMovies.push({
+               id: key,
+               title: data[key].title,
+               openingText: data[key].openingText,
+               releaseDate: data[key].releaseDate,
+          });
+        }
   
-        const transformedMovies = data.results.map((movieData) => {
-          return {
-            id: movieData.episode_id,
-            title: movieData.title,
-            openingText: movieData.opening_crawl,
-            releaseDate: movieData.release_date,
-          };
-        });
-        setMovies(transformedMovies);
+        
+        setMovies(loadedMovies);
       } catch (error) {
         setError(error.message);
       }
@@ -40,15 +42,35 @@ import './App.css';
       fetchMoviesHandler();
     }, [fetchMoviesHandler]);
 
-    function submitHandler(movie){
-      console.log(movie);
+    async function submitHandler(movie){
+      const response = await fetch('https://react-http-ad27f-default-rtdb.firebaseio.com/movies.json', {
+        method: 'POST',
+        body: JSON.stringify(movie),
+        headers: {
+          'Content-Type' : 'application/json'
+        }
+      });
+      const data = await response.json();
+      console.log(data);
     }
-  
+
+    const deleteHandler = async (id) => {
+    
+      await fetch(`https://react-http-ad27f-default-rtdb.firebaseio.com/movies/${id}.json`, {
+        method: 'DELETE',
+        body: JSON.stringify(id),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      setMovies(movies.filter((movie) => movie.id !== id));
+    
+    }
   
     let content = <p>Found no movies.</p>;
   
     if (movies.length > 0) {
-      content = <MoviesList movies={movies} />;
+      content = <MoviesList movies={movies} onDelete = {deleteHandler} /> ;
     }
   
     if (error) {
@@ -62,13 +84,19 @@ import './App.css';
     return (
       <React.Fragment>
         <section>
-          <AddMovie onAddMovie={submitHandler}/>
+          <AddMovie onAddMovie={submitHandler} />
+          
         </section>
       
         <section>
-          <button onClick={fetchMoviesHandler}>Fetch Movies</button>
+          <button onClick={fetchMoviesHandler} >Fetch Movies</button>
+         
         </section>
-        <section>{content}</section>
+        <section>
+          {content}
+        
+        </section>
+        
       </React.Fragment>
     );
   }

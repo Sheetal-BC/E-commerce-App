@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback} from 'react';
 
 import MoviesList from './components/MoviesList';
+import AddMovie from './AddMovie';
 import './App.css';
 
 
@@ -38,6 +39,10 @@ import './App.css';
     useEffect(() => {
       fetchMoviesHandler();
     }, [fetchMoviesHandler]);
+
+    function submitHandler(movie){
+      console.log(movie);
+    }
   
   
     let content = <p>Found no movies.</p>;
@@ -56,6 +61,9 @@ import './App.css';
   
     return (
       <React.Fragment>
+        <section>
+          <AddMovie onAddMovie={submitHandler}/>
+        </section>
       
         <section>
           <button onClick={fetchMoviesHandler}>Fetch Movies</button>
